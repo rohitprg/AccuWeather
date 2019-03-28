@@ -1,0 +1,104 @@
+<html>
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<link rel="stylesheet" href="weather.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" language="javascript">
+
+    function isValidUSZip(zipCode) {
+    	   return /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(zipCode);
+    	}
+        
+        $(document).ready(function(){
+            $("form").on("submit", function (event) {
+
+            	event.preventDefault();
+            	var zipCode = $(".find-forcast").val(); //Get value from form input
+            	if(!isValidUSZip(zipCode)){
+            		$(".state").html("");
+                	$(".weather-condition").html("");
+            		$(".temp-fahrenheit").html("invalid zip code format");
+            		return;
+            	}
+                var locationResourceURL = 'http://localhost:8080/findTempByZipcode/' + zipCode;
+                document.getElementById("my-form").reset();
+                
+                $.ajax({
+                    url: locationResourceURL,
+                    method: 'GET'
+                }).done(function(result) { // Success
+      
+                	var rawJson = JSON.stringify(result);
+        			var json = JSON.parse(rawJson);
+        			updateWeather(json); //Update Weather parameters
+                    
+                }).fail(function (err) { // Error handling
+                    console.log("error");
+                    $(".state").html("");
+                	$(".weather-condition").html("");
+                	
+                    $(".temp-fahrenheit").html(err.responseJSON.message);
+                });
+                
+		
+            });
+        });
+        
+      //Function to update weather information
+
+        function updateWeather (json) {
+        	$(".state").html(json.stateName);
+        	$(".weather-condition").html(json.cityName);
+        	$(".temp-fahrenheit").html(json.temperature + "F");
+      }
+
+    </script>
+</head>
+<body>
+	<div class="main">
+		<div class="container">
+			<div class="app twelve columns">
+				<h1 class="headline">
+					Weather Forecast <span class="location"></span>
+				</h1>
+
+				<div class="row">
+					<div class="eight columns offset-by-two">
+						<div class="weather-info-text">
+							<div class="one-third column">
+								<span class="state"></span>
+							</div>
+							<div class="one-third column">
+								<div class="temperature">
+									<span class="temp-fahrenheit"></span>
+								</div>
+							</div>
+							<div class="one-third column">
+								<span class="weather-condition"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="search-weather eight columns offset-by-two">
+						<h3>Find a Forecast</h3>
+						<form id="my-form" action="">
+							<input type="search" placeholder="Search for location or keyword"
+								class="find-forcast">
+							<button id="submit" type="submit" class="btn-search">Search</button>
+
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- app -->
+		</div>
+		<!-- container -->
+	</div>
+	<!-- main -->
+	</div>
+</body>
+</html>
